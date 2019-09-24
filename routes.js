@@ -1,7 +1,6 @@
 const url = require('url');
 const fs = require('fs');
 const path = require('path');
-var cmd = require('node-cmd');
 const { spawn } = require('child_process');
 
 var recording = false;
