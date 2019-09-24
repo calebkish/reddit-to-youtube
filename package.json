@@ -1,0 +1,25 @@
+{
+  "name": "reddit",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "parcel src/index.html",
+    "prod": "parcel build src/index.html"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bug-killer": "^4.4.4",
+    "google-auth-library": "^5.2.1",
+    "googleapis": "^43.0.0",
+    "lien": "^3.3.0",
+    "nightmare": "^3.0.2",
+    "node-cmd": "^3.0.0",
+    "opn": "^6.0.0",
+    "pretty-bytes": "^5.3.0",
+    "r-json": "^1.2.9",
+    "youtube-api": "^2.0.10",
+    "youtube-video-api": "^0.3.7"
+  }
+}

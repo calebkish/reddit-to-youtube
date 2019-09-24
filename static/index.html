@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>RedditToYoutube</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div id="canvas">
+
+        <div id="wrapper">
+                
+                <div id="title-section">
+                    <span id="title__subreddit"></span>
+                    <span id="title__separator">•</span>
+                    <span id="title__author"></span>    
+                    <p id="title"></p>
+                </div>
+                
+                
+                <div id="comment">
+                    <span id="comment__author">u/TestPerson</span>
+                    <span id="comment__score">1.6k points</span>
+                    <div id="reply">
+                        <span id="reply__author"></span>
+                        <span id="reply__score"></span>
+                        <div id="rtr">
+                            <span id="rtr__author"></span>
+                            <span id="rtr__score"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    </div>
+    <audio id="audio" controls autoplay loop volume="0.1"></audio>
+
+    <button id="replytoreply">Reply to reply</button>
+
+    <button id="start">Start</button>
+    
+    <p id="timer"></p>
+    <script src="index.js" type="application/javascript"></script>
+
+</body>
+</html>
