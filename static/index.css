@@ -51,6 +51,7 @@ body {
     padding: 40px 40px;
     border-radius: 20px;
     display: none;
+    width: 100%;
 }
 
 #title-section {

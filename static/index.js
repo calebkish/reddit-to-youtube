@@ -1,4 +1,4 @@
-var globalSubreddit = 'AskReddit';
+var globalSubreddit = 'epicgamers4life';
 
 var submissionIds;
 var submission;
@@ -107,11 +107,16 @@ var readComment = async(commentData) => {
     else
         commentScoreElement.innerHTML = score + ' points';
 
+    body = await formatMessage(body);
     bodyHtml = await stringToHtml(bodyHtml);
 
-    commentElement.insertBefore(bodyHtml, replyElement);
+    var sentences = body.split('\n\n');
+    var htmlSentences = bodyHtml.innerHTML.split('\n\n');
 
-    body = await formatMessage(body);
+    var bodyElement = document.createElement('p');
+    bodyElement.className = 'md';
+
+    commentElement.insertBefore(bodyElement, replyElement);
     
     commentElement.style.display = 'block';
 
@@ -122,33 +127,41 @@ var readComment = async(commentData) => {
         commentElement.style.visibility = 'visible';
     }
 
-    await (async() => {
-        return new Promise((resolve, reject) => {
-            var msg = new SpeechSynthesisUtterance();
-            msg.text = body;
-
-            msg.addEventListener('end', function() {
-                if (ended) {
-                    setTimeout(function() {
-                        fetch('http://localhost:8000/api/stop/', {
-                            method: 'POST',
-                            body: JSON.stringify({
-                                time: 10
-                            })
-                        }).catch(err => {
-                            console.log(err);
-                        });
-
-                        nextSubmission();
-                    }, endScreenSeconds * 1000);
-                }
+    for (var i=0; i < sentences.length; i++) {
+        await (async() => {
+            return new Promise((resolve, reject) => {
+                var msg = new SpeechSynthesisUtterance();
+                msg.text = sentences[i];
+                bodyElement.innerHTML += htmlSentences[i];
                 
-                resolve();
-            });
+                if (canvasElement.offsetHeight < wrapperElement.offsetHeight) {
+                    canvasElement.style.alignItems = 'end';
+                }
 
-            window.speechSynthesis.speak(msg);
-        });
-    })();
+                msg.addEventListener('end', function() {
+                    if (ended) {
+                        setTimeout(function() {
+                            fetch('http://localhost:8000/api/stop/', {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    time: 10
+                                })
+                            }).catch(err => {
+                                console.log(err);
+                            });
+    
+                            nextSubmission();
+                        }, endScreenSeconds * 1000);
+                    }
+                    
+                    resolve();
+                });
+    
+                window.speechSynthesis.speak(msg);
+            });
+        })();
+    }
+    
 
     if (repliesData !== null && repliesData[0].data.body !== undefined) {
         
@@ -177,11 +190,16 @@ var readReply = async(repliesData) => {
     else
         replyScoreElement.innerHTML = score + ' points';
 
+    body = await formatMessage(body);
     bodyHtml = await stringToHtml(bodyHtml);
 
-    replyElement.insertBefore(bodyHtml, rtrElement);
+    var sentences = body.split('\n\n');
+    var htmlSentences = bodyHtml.innerHTML.split('\n\n');
 
-    body = await formatMessage(body);
+    var bodyElement = document.createElement('p');
+    bodyElement.className = 'md';
+
+    replyElement.insertBefore(bodyElement, rtrElement);
         
     replyElement.style.display = 'block';
 
@@ -192,39 +210,40 @@ var readReply = async(repliesData) => {
         replyElement.style.visibility = 'visible';
     }
     
-    await (async() => {
-        return new Promise((resolve, reject) => {
-            var msg = new SpeechSynthesisUtterance();
-            msg.text = body;
+    for (var i=0; i < sentences.length; i++) {
+        await (async() => {
+            return new Promise((resolve, reject) => {
+                var msg = new SpeechSynthesisUtterance();
+                msg.text = sentences[i];
+                bodyElement.innerHTML += htmlSentences[i];
 
-            if (canvasElement.offsetHeight < wrapperElement.offsetHeight) {
-                canvasElement.style.alignItems = 'end';
-            }
-
-            msg.addEventListener('end', function() {
-                if (ended) {
-                    setTimeout(function() {
-                        fetch('http://localhost:8000/api/stop/', {
-                            method: 'POST',
-                            body: JSON.stringify({
-                                time: 10
-                            })
-                        }).then(res => {
-                            
-                        }).catch(err => {
-                            console.log(err);
-                        });
-
-                        nextSubmission();
-                    }, endScreenSeconds * 1000);
+                if (canvasElement.offsetHeight < wrapperElement.offsetHeight) {
+                    canvasElement.style.alignItems = 'end';
                 }
-                
-                resolve();
-            });
 
-            window.speechSynthesis.speak(msg);
-        });
-    })();
+                msg.addEventListener('end', function() {
+                    if (ended) {
+                        setTimeout(function() {
+                            fetch('http://localhost:8000/api/stop/', {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    time: 10
+                                })
+                            }).catch(err => {
+                                console.log(err);
+                            });
+
+                            nextSubmission();
+                        }, endScreenSeconds * 1000);
+                    }
+                    
+                    resolve();
+                });
+
+                window.speechSynthesis.speak(msg);
+            });
+        })();
+    }
 
     if (rtr) {
         var test = await getReplies(repliesData[0]);
@@ -365,7 +384,8 @@ document.getElementById('start').addEventListener('click', async(e) => {
 
     submissionIds = [
         // 'd3r4qy',
-        // 'd3a6dr',
+        'd8h79a',
+        'd3a6dr',
         'a72nr4',
         'chm4um',
         'cj95jb',
