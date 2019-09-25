@@ -40,17 +40,27 @@ var rtrScoreElement = document.getElementById('rtr__score');
 const chooseRandomVideo = () => {
     var element = document.getElementById('video');
 
-    var rand = Math.floor(Math.random() * 10);
-
-    element.src = 'videos/' + rand + '.mp4';
+    if (config.spooky) {
+        var rand = Math.floor(Math.random() * 6);
+        element.src = 'videos/spooky/' + rand + '.mp4';
+    } else {
+        var rand = Math.floor(Math.random() * 10);
+        element.src = 'videos/' + rand + '.mp4';
+    }
+    
 }
 
 const chooseRandomSong = () => {
     var element = document.getElementById('audio');
 
-    var rand = Math.floor(Math.random() * 55);
-
-    element.src = 'music/' + rand + '.mp3';
+    if (config.spooky) {
+        var rand = Math.floor(Math.random() * 4);
+        element.src = 'music/spooky/' + rand + '.mp3';
+    } else {
+        var rand = Math.floor(Math.random() * 55);
+        element.src = 'music/' + rand + '.mp3';
+    }
+    
     element.volume = 0.1;
 }
 
@@ -128,10 +138,11 @@ var readComment = async(commentData) => {
         await (async() => {
             return new Promise((resolve, reject) => {
                 var msg = new SpeechSynthesisUtterance();
+                if (config.spooky) msg.pitch = 0;
                 msg.text = sentences[i];
                 bodyElement.innerHTML += htmlSentences[i];
                 
-                if (canvasElement.offsetHeight < wrapperElement.offsetHeight) {
+                if ((canvasElement.offsetHeight - 140) < wrapperElement.offsetHeight) {
                     canvasElement.style.alignItems = 'end';
                 }
 
@@ -211,10 +222,11 @@ var readReply = async(repliesData) => {
         await (async() => {
             return new Promise((resolve, reject) => {
                 var msg = new SpeechSynthesisUtterance();
+                if (config.spooky) msg.pitch = 0;
                 msg.text = sentences[i];
                 bodyElement.innerHTML += htmlSentences[i];
 
-                if (canvasElement.offsetHeight < wrapperElement.offsetHeight) {
+                if ((canvasElement.offsetHeight - 140) < wrapperElement.offsetHeight) {
                     canvasElement.style.alignItems = 'end';
                 }
 
@@ -281,7 +293,7 @@ var readRtr = async(rtrData) => {
             var msg = new SpeechSynthesisUtterance();
             msg.text = body;
 
-            if (canvasElement.offsetHeight < wrapperElement.offsetHeight) {
+            if ((canvasElement.offsetHeight - 140) < wrapperElement.offsetHeight) {
                 canvasElement.style.alignItems = 'end';
             }
 
@@ -298,16 +310,37 @@ var readRtr = async(rtrData) => {
     canvasElement.style.alignItems = 'center';
 }
 
-var readTitle = async(title, author, subreddit) => {
+var readTitle = async(data) => {
+    var title = data.title;
+    var author = data.author;
+    var subreddit = data.subreddit_name_prefixed;
+    var score = data.score;
+    var body = data.selftext;
+    var bodyHtml = data['selftext_html'];
+    
     titleSubredditElement.innerHTML = subreddit;
     titleAuthorElement.innerHTML = 'Posted by u/' + author;
     titleElement.innerHTML = title;
+
+    
+
+    body = await formatMessage(body);
+    if (bodyHtml !== null) bodyHtml = await stringToHtml(bodyHtml);
+
+    var sentences = body.split('\n\n');
+    if (bodyHtml !== null) var htmlSentences = bodyHtml.innerHTML.split('\n\n');
+
+    var bodyElement = document.createElement('p');
+    if (bodyHtml !== null) bodyElement.className = 'md';
+
+    if (bodyHtml !== null) titleSection.appendChild(bodyElement);
 
     titleSection.style.display = 'block';
 
     await (async() => {
         return new Promise((resolve, reject) => {
             var msg = new SpeechSynthesisUtterance();
+            if (config.spooky) msg.pitch = 0;
             msg.text = title;
 
             msg.addEventListener('end', function() {
@@ -318,6 +351,45 @@ var readTitle = async(title, author, subreddit) => {
         })
     })();
 
+    if (bodyHtml !== null) {
+        for (var i=0; i < sentences.length; i++) {
+            await (async() => {
+                return new Promise((resolve, reject) => {
+                    var msg = new SpeechSynthesisUtterance();
+                    msg.text = sentences[i];
+                    if (config.spooky) msg.pitch = 0;
+                    bodyElement.innerHTML += htmlSentences[i];
+    
+                    if ((canvasElement.offsetHeight - 140) < wrapperElement.offsetHeight) {
+                        canvasElement.style.alignItems = 'end';
+                    }
+    
+                    msg.addEventListener('end', function() {
+                        if (ended) {
+                            setTimeout(function() {
+                                fetch('http://localhost:8000/api/stop/', {
+                                    method: 'POST',
+                                    body: JSON.stringify({
+                                        time: 10
+                                    })
+                                }).catch(err => {
+                                    console.log(err);
+                                });
+        
+                                nextSubmission();
+                            }, endScreenSeconds * 1000);
+                        }
+                        
+                        resolve();
+                    });
+        
+                    window.speechSynthesis.speak(msg);
+                });
+            })();
+        }
+        titleSection.removeChild(titleSection.children[4]);
+    }
+    
     titleSection.style.display = 'none';
 }
 
@@ -331,24 +403,21 @@ var getReplies = async(message) => {
 var transcribeSubmission = async(subreddit, submissionId, commentAmount) => {
     var submissionData = await getSubmissionData(subreddit, submissionId);
 
-    var submissionTitle = submissionData[0].data.children[0].data.title;
-    var submissionAuthor = submissionData[0].data.children[0].data.author;
-    var submissionSubreddit = submissionData[0].data.children[0].data.subreddit_name_prefixed;
-    var submissionScore = submissionData[0].data.children[0].data.score;
+    var postData = submissionData[0].data.children[0].data;
 
-    fetch('http://localhost:8000/api/start/', {
-        method: 'POST',
-        body: JSON.stringify({
-            time: 10
-        })
-    }).catch(err => {
-        console.log(err);
-    });
+    // fetch('http://localhost:8000/api/start/', {
+    //     method: 'POST',
+    //     body: JSON.stringify({
+    //         time: 10
+    //     })
+    // }).catch(err => {
+    //     console.log(err);
+    // });
 
     setTimeout(async function() {
         wrapperElement.style.display = 'block';
         
-        await readTitle(submissionTitle, submissionAuthor, submissionSubreddit);
+        await readTitle(postData);
 
         var comments = submissionData[1].data.children;
 
