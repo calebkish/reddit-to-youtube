@@ -1,3 +1,14 @@
+:root {
+    --titleColor: #D7DADC;
+    --textColor: rgb(215, 218, 220);
+    --posterColor: #4FBCFF;
+    --metaTextColor: #818384;
+    --wrapperBackground: rgba(26,27,27, 0.8);
+    --lineColor: #343536;
+    --quoteLineColor: rgba(215, 218, 220, 0.2);
+    --linkColor: #4FBCFF;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -16,12 +27,30 @@ body {
     display: flex;
     align-items: center;
     padding: 0 70px;
+    position: relative;
+    z-index: -2;
+}
+
+#background-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+#background-video video {
+    width: 100%;
 }
 
 #wrapper {
-    /* background: #eee; */
-    padding: 0 40px;
+    background: var(--wrapperBackground);
+    padding: 40px 40px;
     border-radius: 20px;
+    display: none;
 }
 
 #title-section {
@@ -35,19 +64,19 @@ body {
 }
 
 #title__subreddit {
-    color: rgb(28, 28, 28);
+    color: var(--titleColor);
 }
 
 #title__separator {
-    color: rgb(120, 124, 126);
+    color: var(--metaTextColor);
 }
 
 #title__author {
-    color: rgb(120, 124, 126);
+    color: var(--metaTextColor);
 }
 
 #title {
-    color: rgb(26, 26, 27);
+    color: var(--titleColor);
     font-weight: 600;
     font-size: 25px;
     margin-bottom: 20px;
@@ -56,49 +85,51 @@ body {
 #comment {
     font-size: 20px;
     visibility: hidden;
+    display: none;
 }
 
 #comment__author {
-    color: rgb(68, 78, 89);
+    color: var(--posterColor);
     font-size: 18px;
 }
 
 #comment__score {
-    color: rgb(124, 124, 124);
+    color: var(--metaTextColor);
     font-size: 14px;
 }
 
 #reply {
     margin-top: 15px;
     padding-left: 20px;
-    border-left: 3px solid hsl(240, 10%, 70%);
+    border-left: 3px solid var(--lineColor);
     visibility: hidden;
+    display: none;
 }
 
 #reply__author {
-    color: rgb(68, 78, 89);
+    color: var(--posterColor);
     font-size: 18px;
 }
 
 #reply__score {
-    color: rgb(124, 124, 124);
+    color: var(--metaTextColor);
     font-size: 14px;
 }
 
 #rtr {
     margin-top: 15px;
     padding-left: 20px;
-    border-left: 3px solid hsl(240, 10%, 70%);
+    border-left: 3px solid var(--lineColor);
     display: none;
 }
 
 #rtr__author {
-    color: rgb(68, 78, 89);
+    color: var(--posterColor);
     font-size: 18px;
 }
 
 #rtr__score {
-    color: rgb(124, 124, 124);
+    color: var(--metaTextColor);
     font-size: 14px;
 }
 
@@ -106,7 +137,7 @@ body {
     margin-bottom: 5px;
     
     font-size: 22px;
-    color: rgb(26, 26, 27);
+    color: var(--textColor);
 }
 
 .md p em {
@@ -121,6 +152,10 @@ body {
     margin: 2px 0;
 }
 
+.md a {
+    color: var(--linkColor);
+}
+
 .md code {
     background: #ddd;
     font-family: monospace;
@@ -132,7 +167,7 @@ body {
 
 .md blockquote {
     padding-left: 15px;
-    border-left: 5px solid hsl(240, 10%, 70%);
+    border-left: 5px solid var(--quoteLineColor);
     padding-right: 15px;
 }
 

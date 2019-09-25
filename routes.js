@@ -9,7 +9,8 @@ const contentTypeHeaders = {
   '.js': 'application/javascript',
   '.css': 'text/css',
   '.json': 'application/json',
-  '.mp3': 'audio/mpeg'
+  '.mp3': 'audio/mpeg',
+  '.mp4': 'video/mp4'
 }
 
 let ffmpeg = {};
@@ -65,7 +66,7 @@ module.exports = {
               '-f', 'dshow', 
               '-i', 'video=screen-capture-recorder:audio=virtual-audio-capturer',
               '-framerate', '30',
-              '-rtbufsize', '100M',
+              '-rtbufsize', '500M',
               '-vf', 'crop=1280:720:1:97',
               '-t', '720',
               dir + fileName

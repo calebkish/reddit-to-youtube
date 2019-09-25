@@ -37,6 +37,14 @@ var rtrElement = document.getElementById('rtr');
 var rtrAuthorElement = document.getElementById('rtr__author');
 var rtrScoreElement = document.getElementById('rtr__score');
 
+const chooseRandomVideo = () => {
+    var element = document.getElementById('video');
+
+    var rand = Math.floor(Math.random() * 10);
+
+    element.src = 'videos/' + rand + '.mp4';
+}
+
 const chooseRandomSong = () => {
     var element = document.getElementById('audio');
 
@@ -104,6 +112,8 @@ var readComment = async(commentData) => {
     commentElement.insertBefore(bodyHtml, replyElement);
 
     body = await formatMessage(body);
+    
+    commentElement.style.display = 'block';
 
     if (commentElement.offsetHeight > 687) {
         commentElement.removeChild(commentElement.children[2]);
@@ -150,6 +160,7 @@ var readComment = async(commentData) => {
         
 
     commentElement.removeChild(commentElement.children[2]);
+    commentElement.style.diaplay = 'none';
     commentElement.style.visibility = 'hidden';
 }
 
@@ -171,6 +182,8 @@ var readReply = async(repliesData) => {
     replyElement.insertBefore(bodyHtml, rtrElement);
 
     body = await formatMessage(body);
+        
+    replyElement.style.display = 'block';
 
     if (replyElement.offsetHeight > 687) {
         replyElement.removeChild(replyElement.children[2]);
@@ -220,6 +233,7 @@ var readReply = async(repliesData) => {
     }
 
     replyElement.removeChild(replyElement.children[2]);
+    replyElement.style.display = 'none';
     replyElement.style.visibility = 'hidden';
     canvasElement.style.alignItems = 'center';
 }
@@ -316,6 +330,8 @@ var transcribeSubmission = async(subreddit, submissionId, commentAmount) => {
     });
 
     setTimeout(async function() {
+        wrapperElement.style.display = 'block';
+        
         await readTitle(submissionTitle, submissionAuthor, submissionSubreddit);
 
         var comments = submissionData[1].data.children;
@@ -331,6 +347,7 @@ var transcribeSubmission = async(subreddit, submissionId, commentAmount) => {
 
 var processSubmission = async (submission) => {
     chooseRandomSong();
+    chooseRandomVideo();
 
     var seconds = 60 * submissionTimeMinutes;
     var display = document.getElementById('timer');
@@ -349,11 +366,11 @@ document.getElementById('start').addEventListener('click', async(e) => {
     submissionIds = [
         // 'd3r4qy',
         // 'd3a6dr',
-        // 'a72nr4',
-        // 'chm4um',
-        // 'cj95jb',
-        // 'bhd99l',
-        // 'akbzuv',
+        'a72nr4',
+        'chm4um',
+        'cj95jb',
+        'bhd99l',
+        'akbzuv',
         'cy82ym',
         'cpsi27',
         'a0a4cd',

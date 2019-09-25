@@ -1,3 +1,6 @@
-node_modules
+node_modules/
 
-rootjuice
+rootjuice/
+
+static/music/
+static/videos/
