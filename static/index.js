@@ -405,14 +405,17 @@ var transcribeSubmission = async(subreddit, submissionId, commentAmount) => {
 
     var postData = submissionData[0].data.children[0].data;
 
-    // fetch('http://localhost:8000/api/start/', {
-    //     method: 'POST',
-    //     body: JSON.stringify({
-    //         time: 10
-    //     })
-    // }).catch(err => {
-    //     console.log(err);
-    // });
+    if (config.record) {
+        fetch('http://localhost:8000/api/start/', {
+            method: 'POST',
+            body: JSON.stringify({
+                time: 10
+            })
+        }).catch(err => {
+            console.log(err);
+        });   
+    }
+    
 
     setTimeout(async function() {
         wrapperElement.style.display = 'block';
