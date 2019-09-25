@@ -92,8 +92,8 @@ const getSubmissions = async(subreddit) => {
     return submissionIds;
 }
 
-const getSubmissionData = async(subreddit, submissionId) => {
-    var res = await fetch('http://www.reddit.com/r/'+ subreddit + '/comments/' + submissionId + '/.json');
+const getSubmissionData = async(submissionId) => {
+    var res = await fetch('http://www.reddit.com/' + submissionId + '/.json');
     res = await res.json();
 
     return res;
@@ -147,16 +147,20 @@ var readComment = async(commentData) => {
                 }
 
                 msg.addEventListener('end', function() {
-                    if (ended) {
+                    if (ended && (sentences[i] === sentences[sentences.length-1])) {
+                        wrapperElement.style.display = 'none';
+
                         setTimeout(function() {
-                            fetch('http://localhost:8000/api/stop/', {
-                                method: 'POST',
-                                body: JSON.stringify({
-                                    time: 10
-                                })
-                            }).catch(err => {
-                                console.log(err);
-                            });
+                            if (config.record) {
+                                fetch('http://localhost:8000/api/stop/', {
+                                    method: 'POST',
+                                    body: JSON.stringify({
+                                        time: 10
+                                    })
+                                }).catch(err => {
+                                    console.log(err);
+                                });
+                            }
     
                             nextSubmission();
                         }, endScreenSeconds * 1000);
@@ -169,7 +173,6 @@ var readComment = async(commentData) => {
             });
         })();
     }
-    
 
     if (repliesData !== null && repliesData[0].data.body !== undefined) {
         
@@ -181,8 +184,9 @@ var readComment = async(commentData) => {
         
 
     commentElement.removeChild(commentElement.children[2]);
-    commentElement.style.diaplay = 'none';
+    commentElement.style.display = 'none';
     commentElement.style.visibility = 'hidden';
+    canvasElement.style.alignItems = 'center';
 }
 
 var readReply = async(repliesData) => {
@@ -231,16 +235,20 @@ var readReply = async(repliesData) => {
                 }
 
                 msg.addEventListener('end', function() {
-                    if (ended) {
+                    if (ended && (sentences[i] === sentences[sentences.length-1])) {
+                        wrapperElement.style.display = 'none';
+
                         setTimeout(function() {
-                            fetch('http://localhost:8000/api/stop/', {
-                                method: 'POST',
-                                body: JSON.stringify({
-                                    time: 10
-                                })
-                            }).catch(err => {
-                                console.log(err);
-                            });
+                            if (config.record) {
+                                fetch('http://localhost:8000/api/stop/', {
+                                    method: 'POST',
+                                    body: JSON.stringify({
+                                        time: 10
+                                    })
+                                }).catch(err => {
+                                    console.log(err);
+                                });
+                            }
 
                             nextSubmission();
                         }, endScreenSeconds * 1000);
@@ -322,8 +330,6 @@ var readTitle = async(data) => {
     titleAuthorElement.innerHTML = 'Posted by u/' + author;
     titleElement.innerHTML = title;
 
-    
-
     body = await formatMessage(body);
     if (bodyHtml !== null) bodyHtml = await stringToHtml(bodyHtml);
 
@@ -336,6 +342,7 @@ var readTitle = async(data) => {
     if (bodyHtml !== null) titleSection.appendChild(bodyElement);
 
     titleSection.style.display = 'block';
+    wrapperElement.style.display === 'block';
 
     await (async() => {
         return new Promise((resolve, reject) => {
@@ -365,16 +372,20 @@ var readTitle = async(data) => {
                     }
     
                     msg.addEventListener('end', function() {
-                        if (ended) {
+                        if (ended && (sentences[i] === sentences[sentences.length-1])) {
+                            wrapperElement.style.display = 'none';
+                            
                             setTimeout(function() {
-                                fetch('http://localhost:8000/api/stop/', {
-                                    method: 'POST',
-                                    body: JSON.stringify({
-                                        time: 10
-                                    })
-                                }).catch(err => {
-                                    console.log(err);
-                                });
+                                if (config.record) {
+                                    fetch('http://localhost:8000/api/stop/', {
+                                        method: 'POST',
+                                        body: JSON.stringify({
+                                            time: 10
+                                        })
+                                    }).catch(err => {
+                                        console.log(err);
+                                    });
+                                }
         
                                 nextSubmission();
                             }, endScreenSeconds * 1000);
@@ -391,6 +402,7 @@ var readTitle = async(data) => {
     }
     
     titleSection.style.display = 'none';
+    canvasElement.style.alignItems = 'center';
 }
 
 var getReplies = async(message) => {
@@ -400,8 +412,8 @@ var getReplies = async(message) => {
         return message.data.replies.data.children;
 }
 
-var transcribeSubmission = async(subreddit, submissionId, commentAmount) => {
-    var submissionData = await getSubmissionData(subreddit, submissionId);
+var transcribeSubmission = async(submissionId, commentAmount) => {
+    var submissionData = await getSubmissionData(submissionId);
 
     var postData = submissionData[0].data.children[0].data;
 
@@ -443,7 +455,7 @@ var processSubmission = async (submission) => {
 
     ended = false;
 
-    await transcribeSubmission(globalSubreddit, submission, 50 );
+    await transcribeSubmission(submission, 50 );
 }
 
 document.getElementById('start').addEventListener('click', async(e) => {

@@ -55,7 +55,7 @@ module.exports = {
           const dateString = `${now.getMonth()}-${now.getDate()}-${now.getFullYear()}T${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}`;
 
           const fileName = dateString + '.mkv';
-          const dir = './rootjuice/' + dateString + '/';
+          const dir = './rootjuice/';
 
           if (!fs.existsSync(dir))
               fs.mkdirSync(dir);
@@ -68,7 +68,7 @@ module.exports = {
               '-framerate', '30',
               '-rtbufsize', '500M',
               '-vf', 'crop=1280:720:1:97',
-              '-t', '720',
+              '-t', '1200',
               dir + fileName
           ]);
 
