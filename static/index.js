@@ -1,13 +1,13 @@
-var globalSubreddit = 'epicgamers4life';
+var globalSubreddit = config.globalSubreddit;
 
 var submissionIds;
 var submission;
 
 var ended = false;
 
-var startDelaySeconds = 2;
-var submissionTimeMinutes = 10;
-var endScreenSeconds = 15;
+var startDelaySeconds = config.startDelaySeconds;
+var submissionTimeMinutes = config.submissionTimeMinutes;
+var endScreenSeconds = config.endScreenSeconds;
 
 var rtr = false;
 document.getElementById('replytoreply').addEventListener('click', e => {
@@ -54,17 +54,14 @@ const chooseRandomSong = () => {
     element.volume = 0.1;
 }
 
-const formatMessage = async(message) => {
+const formatMessage = message => {
     message = message.replace(/(?:__|[*#])|\[(.*?)\]\(.*?\)/gm, '$1');
-
     message = message.replace(/&gt;!|!&lt;|\\|&gt;|&lt;|&amp;|x200B;|&x200B/g, '');
-
     message = message.replace(/(?:https?|ftp):\/\/[\n\S]+/g, '');
-
     return message;
 }
 
-const stringToHtml = async(html) => {
+const stringToHtml = html => {
 	var txt = document.createElement('textarea');
     txt.innerHTML = html;
 
@@ -380,27 +377,12 @@ var processSubmission = async (submission) => {
 document.getElementById('start').addEventListener('click', async(e) => {
     ended = false;
 
-    submissionIds = await getSubmissions(globalSubreddit);
 
-    submissionIds = [
-        // 'd3r4qy',
-        'd8h79a',
-        'd3a6dr',
-        'a72nr4',
-        'chm4um',
-        'cj95jb',
-        'bhd99l',
-        'akbzuv',
-        'cy82ym',
-        'cpsi27',
-        'a0a4cd',
-        'b0ox0w',
-        'b0e6ty',
-        'bvr285',
-        'ayoyal',
-        'coai4l',
-        'auypw7'
-    ];
+    if (config.useCustomSubmissions) {
+        submissionIds = config.submissionIds;
+    } else {
+        submissionIds = await getSubmissions(globalSubreddit);
+    }
 
     submission = submissionIds[0];
 
