@@ -67,8 +67,8 @@ module.exports = {
               '-i', 'video=screen-capture-recorder:audio=virtual-audio-capturer',
               '-framerate', '30',
               '-rtbufsize', '500M',
-              '-vf', 'crop=1280:720:1:97',
-              '-t', '1200',
+              '-vf', 'crop=1280:720:1:65',
+              '-t', '2400',
               dir + fileName
           ]);
 

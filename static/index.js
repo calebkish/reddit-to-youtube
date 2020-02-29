@@ -1,3 +1,7 @@
+var mediaEnded = false;
+
+var videoStart = false;
+
 var globalSubreddit = config.globalSubreddit;
 
 var submissionIds;
@@ -37,6 +41,12 @@ var rtrElement = document.getElementById('rtr');
 var rtrAuthorElement = document.getElementById('rtr__author');
 var rtrScoreElement = document.getElementById('rtr__score');
 
+var postGifElement = document.querySelector('.jsgif');
+var postVideoElement = document.getElementById('post-video');
+var postAudioElement = document.getElementById('post-audio');
+
+postAudioElement.volume = 0.5;
+
 const chooseRandomVideo = () => {
     var element = document.getElementById('video');
 
@@ -47,7 +57,6 @@ const chooseRandomVideo = () => {
         var rand = Math.floor(Math.random() * 10);
         element.src = 'videos/' + rand + '.mp4';
     }
-    
 }
 
 const chooseRandomSong = () => {
@@ -61,7 +70,7 @@ const chooseRandomSong = () => {
         element.src = 'music/' + rand + '.mp3';
     }
     
-    element.volume = 0.1;
+    element.volume = 0.2;
 }
 
 const formatMessage = message => {
@@ -318,31 +327,97 @@ var readRtr = async(rtrData) => {
     canvasElement.style.alignItems = 'center';
 }
 
+var getReplies = async(message) => {
+    if (message.data.replies === '')
+        return null;
+    else
+        return message.data.replies.data.children;
+}
+
 var readTitle = async(data) => {
     var title = data.title;
     var author = data.author;
     var subreddit = data.subreddit_name_prefixed;
     var score = data.score;
-    var body = data.selftext;
-    var bodyHtml = data['selftext_html'];
-    
+    var videoUrl = null;
+    var audioUrl = null;
+    var gifUrl = null;
+    var gfycatUrl = null;
+
+
     titleSubredditElement.innerHTML = subreddit;
     titleAuthorElement.innerHTML = 'Posted by u/' + author;
     titleElement.innerHTML = title;
+    
+    var isGfycat = false;
+    var isVideo = false;
+    var isGif = false;
 
-    body = await formatMessage(body);
-    if (bodyHtml !== null) bodyHtml = await stringToHtml(bodyHtml);
+    // Test if post is a video
+    if (data.media !== null || data.crosspost_parent_list !== undefined) {
+        if (data.crosspost_parent_list !== undefined) {
+            if (data.crosspost_parent_list[0].media && data.crosspost_parent_list[0].media.reddit_video !== undefined) {
+                isVideo = true;
+            }
+        } else if (data.media !== null) {
+            if (data.media.reddit_video !== undefined) {
+                isVideo = true;
+            }
+        }
 
-    var sentences = body.split('\n\n');
-    if (bodyHtml !== null) var htmlSentences = bodyHtml.innerHTML.split('\n\n');
+    }
 
-    var bodyElement = document.createElement('p');
-    if (bodyHtml !== null) bodyElement.className = 'md';
+    // Test if post is a gfycat video
+    if (new RegExp(/https:\/\/gfycat.com\/[\s\S]*/g).test(data.url)) {
+        isGfycat = true;
+    }
 
-    if (bodyHtml !== null) titleSection.appendChild(bodyElement);
+    // Test if post is a gif
+    if (new RegExp(/[\w\W]*.gif/g).test(data.url)) {
+        isGif = true;
+    }
+    
+    if (isGfycat) {
+        gfycatUrl = data.url;
 
+        var gfycatUrlArray = data.url.split('/');
+        var gfycatId = gfycatUrlArray[gfycatUrlArray.length - 1];
+        
+        await fetch('https://api.gfycat.com/v1/gfycats/' + gfycatId)
+            .then(res => res.json())
+            .then(data => {
+                gfycatUrl = data.gfyItem.mp4Url;
+            });
+    } else if (isVideo) {        
+        if (data.crosspost_parent_list !== undefined) {
+            videoUrl = data.crosspost_parent_list[0].media.reddit_video.fallback_url.split('?')[0];
+        } else {
+            videoUrl = data.media.reddit_video.fallback_url.split('?')[0];
+        }
+        
+        var audioArray = videoUrl.split('/');
+        audioArray.pop();
+        audioUrl = audioArray.join('/') + '/audio';
+    } else if (isGif) {
+        gifUrl = data.url;
+    } else {
+        var body = data.selftext;
+        var bodyHtml = data['selftext_html'];
+        
+        body = await formatMessage(body);
+        if (bodyHtml !== null) bodyHtml = await stringToHtml(bodyHtml);
+
+        var sentences = body.split('\n\n');
+        if (bodyHtml !== null) var htmlSentences = bodyHtml.innerHTML.split('\n\n');
+
+        var bodyElement = document.createElement('p');
+        if (bodyHtml !== null) bodyElement.className = 'md';
+
+        if (bodyHtml !== null) titleSection.appendChild(bodyElement);
+    }
+    
     titleSection.style.display = 'block';
-    wrapperElement.style.display === 'block';
+    wrapperElement.style.display = 'block';
 
     await (async() => {
         return new Promise((resolve, reject) => {
@@ -358,7 +433,7 @@ var readTitle = async(data) => {
         })
     })();
 
-    if (bodyHtml !== null) {
+    if (bodyHtml) {
         for (var i=0; i < sentences.length; i++) {
             await (async() => {
                 return new Promise((resolve, reject) => {
@@ -399,23 +474,261 @@ var readTitle = async(data) => {
             })();
         }
         titleSection.removeChild(titleSection.children[4]);
+    } else if (videoUrl !== null) {
+        await (async() => {
+            return new Promise((resolve, reject) => {
+                wrapperElement.style.display = 'none';
+                
+                var backgroundAudio = document.getElementById('audio');
+
+                var maxTimesPlayed = 2;
+                var timesPlayed = 0;
+                
+                postVideoElement.src = videoUrl;
+                postAudioElement.src = audioUrl;
+
+                
+                
+                postVideoElement.play();
+                postAudioElement.play();
+                
+                postVideoElement.addEventListener('loadedmetadata', function() {             
+                    if (postVideoElement.duration > 10) {
+                        maxTimesPlayed = 1;
+                    }
+                });
+                
+                backgroundAudio.volume = 0;
+                postAudioElement.onerror = function() {
+                    backgroundAudio.volume = 0.2;
+                }
+
+                postVideoElement.style.display = 'block';
+
+                postVideoElement.onended = function() { 
+                    timesPlayed++;
+
+                    if (timesPlayed < maxTimesPlayed) {
+                        postVideoElement.play();
+                        postAudioElement.play();
+                    } else {
+                        backgroundAudio.volume = 0.2;
+                        mediaEnded = true;
+                        postVideoElement.style.display = 'none';
+                        
+                        if (ended) {
+                            wrapperElement.style.display = 'none';
+                            
+                            setTimeout(function() {
+                                if (config.record) {
+                                    fetch('http://localhost:8000/api/stop/', {
+                                        method: 'POST',
+                                        body: JSON.stringify({
+                                            time: 10
+                                        })
+                                    }).catch(err => {
+                                        console.log(err);
+                                    });
+                                }
+                            }, endScreenSeconds * 1000);
+                        } 
+
+                        resolve();
+                    }
+                }
+            });
+        })();
+    } else if (gfycatUrl !== null) {
+        await (async() => {
+            return new Promise((resolve, reject) => {
+                wrapperElement.style.display = 'none';
+                
+                var maxTimesPlayed = 2;
+                var timesPlayed = 0;
+                
+                postVideoElement.src = gfycatUrl;
+                
+                postVideoElement.play();
+                
+                postVideoElement.addEventListener('loadedmetadata', function() {             
+                    if (postVideoElement.duration > 10) {
+                        maxTimesPlayed = 1;
+                    }
+                });
+
+                postVideoElement.style.display = 'block';
+
+                postVideoElement.onended = function() { 
+                    timesPlayed++;
+
+                    if (timesPlayed < maxTimesPlayed) {
+                        postVideoElement.play();
+                        postAudioElement.play();
+                    } else {
+                        mediaEnded = true;
+                        postVideoElement.style.display = 'none';
+                        
+                        if (ended) {
+                            wrapperElement.style.display = 'none';
+                            
+                            setTimeout(function() {
+                                if (config.record) {
+                                    fetch('http://localhost:8000/api/stop/', {
+                                        method: 'POST',
+                                        body: JSON.stringify({
+                                            time: 10
+                                        })
+                                    }).catch(err => {
+                                        console.log(err);
+                                    });
+                                }
+                            }, endScreenSeconds * 1000);
+                        } 
+
+                        resolve();
+                    }
+                }
+            });
+        })();
+    } else if (gifUrl !== null) {        
+        await (async() => {
+            return new Promise((resolve, reject) => {
+                wrapperElement.style.display = 'none';
+
+                postGifElement.src = gifUrl;
+                postGifElement.style.display = 'flex';
+
+                var superGif = new SuperGif({
+                    gif: postGifElement,
+                    on_end: function(postGifELement) {
+                        console.log('in here');
+                        
+                        mediaEnded = true;
+                        console.log(postGifELement);
+                        postGifElement.style.display = 'none';
+                        
+                        if (ended) {
+                            wrapperElement.style.display = 'none';
+                            
+                            setTimeout(function() {
+                                if (config.record) {
+                                    fetch('http://localhost:8000/api/stop/', {
+                                        method: 'POST',
+                                        body: JSON.stringify({
+                                            time: 10
+                                        })
+                                    }).catch(err => {
+                                        console.log(err);
+                                    });
+                                }
+                            }, endScreenSeconds * 1000);
+                        } 
+
+                        resolve();
+                    },
+                    loop_mode: false,
+                    progressbar_height: 0
+                });
+
+                superGif.load(function() {
+                    console.log('loaded');
+                });
+            });
+        })();
     }
-    
+
     titleSection.style.display = 'none';
     canvasElement.style.alignItems = 'center';
 }
 
-var getReplies = async(message) => {
-    if (message.data.replies === '')
-        return null;
-    else
-        return message.data.replies.data.children;
-}
 
-var transcribeSubmission = async(submissionId, commentAmount) => {
+
+
+
+var transcribeSubmission = async(submissionId) => {
     var submissionData = await getSubmissionData(submissionId);
 
-    var postData = submissionData[0].data.children[0].data;
+
+    if (submissionData[0] === undefined) {
+        wrapperElement.style.display = 'none';
+        
+        setTimeout(function() {
+            if (config.record) {
+                fetch('http://localhost:8000/api/stop/', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        time: 10
+                    })
+                }).catch(err => {
+                    console.log(err);
+                });
+            }
+        }, endScreenSeconds * 1000);
+    } else {
+        var postData = submissionData[0].data.children[0].data;
+
+        setTimeout(async function() {
+            await readTitle(postData);
+            // postData.media && postData.media.reddit_video.fallback_url
+            if (postData.media !== null || postData.crosspost_parent_list !== undefined) {
+                if (!ended)
+                    nextSubmission();
+            } else if (new RegExp(/https:\/\/gfycat.com\/[\s\S]*/g).test(postData.url)) {
+                if (!ended)
+                    nextSubmission();
+            } else {
+                wrapperElement.style.display = 'block';
+
+                var comments = submissionData[1].data.children;
+
+                for (var i=0; i < comments.length; i++) {
+                    var commentBody = comments[i].data.body;
+                    if ((!ended) && (commentBody !== '[deleted]') && (commentBody !== '[removed]'))
+                        await readComment(comments[i]);
+                }
+                
+                
+            }
+            
+        }, (videoStart) ? 1000 : config.startDelaySeconds * 1000);
+    }
+}
+
+
+
+
+
+var startNewSubmission = async (submission) => {
+    if (!videoStart || !config.continuous) {
+        chooseRandomSong();
+        chooseRandomVideo();
+
+        var seconds = 60 * submissionTimeMinutes;
+        var display = document.getElementById('timer');
+        startTimer(seconds, display);
+    }
+
+    ended = false;
+
+    await transcribeSubmission(submission);
+
+    videoStart = true;
+}
+
+
+
+
+
+
+document.getElementById('start').addEventListener('click', async(e) => {
+    ended = false;
+
+    if (config.useCustomSubmissions) {
+        submissionIds = config.submissionIds;
+    } else {
+        submissionIds = await getSubmissions(globalSubreddit);
+        submissionIds.shift();
+    }
 
     if (config.record) {
         fetch('http://localhost:8000/api/start/', {
@@ -427,54 +740,20 @@ var transcribeSubmission = async(submissionId, commentAmount) => {
             console.log(err);
         });   
     }
-    
-
-    setTimeout(async function() {
-        wrapperElement.style.display = 'block';
-        
-        await readTitle(postData);
-
-        var comments = submissionData[1].data.children;
-
-        for (var i=0; i < comments.length; i++) {
-            var commentBody = comments[i].data.body;
-            if ((!ended) && (commentBody !== '[deleted]') && (commentBody !== '[removed]'))
-                await readComment(comments[i]);
-        }
-    }, startDelaySeconds * 1000);
-    
-}
-
-var processSubmission = async (submission) => {
-    chooseRandomSong();
-    chooseRandomVideo();
-
-    var seconds = 60 * submissionTimeMinutes;
-    var display = document.getElementById('timer');
-    startTimer(seconds, display);
-
-    ended = false;
-
-    await transcribeSubmission(submission, 50 );
-}
-
-document.getElementById('start').addEventListener('click', async(e) => {
-    ended = false;
-
-
-    if (config.useCustomSubmissions) {
-        submissionIds = config.submissionIds;
-    } else {
-        submissionIds = await getSubmissions(globalSubreddit);
-    }
 
     submission = submissionIds[0];
-
+    
     nextSubmission();
 });
 
+
+
+
+
+
+
 function nextSubmission() {
-    processSubmission(submission);
+    startNewSubmission(submission);
     submissionIds.shift();
     submission = submissionIds[0];
 }

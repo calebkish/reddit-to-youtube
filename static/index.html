@@ -16,6 +16,10 @@
             <video id="video" autoplay loop></video>
         </div>
 
+        <!-- <img class="jsgif"/> -->
+
+        <video id="post-video"></video>
+
         <div id="wrapper">
                 
                 <div id="title-section">
@@ -24,7 +28,6 @@
                     <span id="title__author"></span>    
                     <p id="title"></p>
                 </div>
-                
                 
                 <div id="comment">
                     <span id="comment__author">u/TestPerson</span>
@@ -44,11 +47,32 @@
     <audio id="audio" controls autoplay loop volume="0.1"></audio>
 
     <button id="replytoreply">Reply to reply</button>
-
     <button id="start">Start</button>
-    
     <p id="timer"></p>
+
+    <audio id="post-audio" controls></audio>
+
+    <script src="libgif.js" type="application/javascript"></script>
     <script src="config.js" type="application/javascript"></script>
     <script src="index.js" type="application/javascript"></script>
+
+    <!-- <script>
+        var testAudio = document.querySelector('#test-audio');
+        var testVideo = document.querySelector('#post-video');
+        var testGif = document.querySelector('#test-gif');
+        
+        var test = new SuperGif({
+            gif: testGif,
+            on_end: function(testGif) {
+                console.log('ended');
+            },
+            loop_mode: false,
+            progressbar_height: 0
+        });
+
+        test.load(function() {
+            console.log('loaded');
+        });
+    </script> -->
 </body>
 </html>
